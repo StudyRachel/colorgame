@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>色塊遊戲</title>
+    <style>
+        *{
+            box-sizing: border-box;
+            margin: 0px;
+            padding: 0px;
+        }
+
+        nav{
+            width: 50%;
+            height: 50px;
+            background-color: aquamarine;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+
+            position: fixed;
+            left: 0px;
+            top: 0px;
+        }
+
+        nav span, nav button{
+            width: 100px;
+            background-color: antiquewhite;
+            /* 置中 */
+            line-height: 40px;
+            text-align: left;
+
+            
+        }
+        body{
+            border: 1px solid red;
+            padding-top: 100px;
+        }
+        .text{
+            text-align: center;
+        }
+        main{
+            /* width: 240px; */ /* 已在JS設定，可省略 */
+            /* height: 600px; */
+            background-color: antiquewhite;
+            margin: auto;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            align-content: center;
+        }
+        main div{
+            width: 100px;
+            height: 100px;
+            margin: 10px;            
+            cursor: pointer;
+        }
+        /* 已在JS設定，可省略 */
+        /* main div.ans{
+            opacity: 0.6; 
+        } */
+    </style>
+</head>
+<body>
+    <nav>
+        <button id="start" class="text">開始遊戲</button>
+        <span id="score" class="text">分數：</span>
+        <span id="timeLeft" class="text">剩餘時間：</span>
+        <span id="num" class="text">錯誤次數：</span>
+    </nav>
+    <main></main>
+    
+
+
+    <script>
+        // 取元素為固定的
+        const main = document.querySelector("main");
+        const start_btn = document.querySelector("#start");
+        const score = document.querySelector("#score");
+        const timeLeft = document.querySelector("#timeLeft");
+        const num = document.querySelector("#num");
+        var point;
+        // main div初始值
+        var difficulty = 2;
+        var opacity = 0.6;
+        var timer;
+        var wrong;
+
+        function startGame() {
+            main.innerHTML = "";
+
+            // 產生方塊之前，先利用亂數產生正確答案
+            var ans = Math.floor(Math.random() * (difficulty ** 2));
+
+            // 隨機產生顏色代碼 0~255，共256個
+            var r = Math.floor(Math.random() * 256);
+            var g = Math.floor(Math.random() * 256);
+            var b = Math.floor(Math.random() * 256);
+
+            // 產生方塊前先將main的大小變大
+            // 120為main div的寬100px +margin=10px*2
+            main.style.width = (difficulty * 120) + 'px';
+
+            // 產生方塊
+            for (let index = 0; index < (difficulty ** 2); index++) {
+                if (index == ans) {
+                    // 正確答案要變淡
+                    main.innerHTML += '<div class="ans" style="background-color: rgb('+ r +','+ g +','+ b +'); opacity:' + opacity +';"  onclick="ansCheck(1)"></div>';
+                } else {
+                    // 不正確答案不用變淡
+                    main.innerHTML += '<div style="background-color: rgb('+ r +','+ g +','+ b +');"  onclick="ansCheck(0)"></div>';
+                }
+            }
+        }
+
+        // 先假設點到正確的方塊他會傳數字1進來，點到錯誤的方塊會傳0進來
+        function ansCheck(guess){
+            if (guess == 1) {
+                // 做正確的事
+                point++; //數字累加
+                score.innerHTML = '你的分數：' + point;
+
+                // 分數增加後，判定分數去決定接下來的難易度
+                if(point <=3){
+                    difficulty = 2;
+                }else if(point <= 6){
+                    difficulty = 3;
+                }else if(point <= 9){
+                    difficulty = 4;
+                    opacity = 0.7;
+                }else if(point <= 12){
+                    difficulty = 5;
+                    opacity = 0.8;
+                }else{
+                    difficulty = 6;
+                    opacity = 0.9;
+                }
+
+                // 重設遊戲到下一題
+                startGame();
+            } else {
+                // 做錯誤的事
+                wrong++;
+                // 可以錯3次
+                if (wrong < 3){
+                    startGame();
+                    num.innerHTML = '錯誤次數：' + wrong;
+                }else{
+                    // 猜錯遊戲結束
+                    stopGame();
+                    alert('錯三次Game Over,Your Score:' + point);
+                }
+            }
+        }
+
+
+        // 遊戲結束
+        function stopGame(){
+            clearInterval(timer);
+            main.innerHTML = '';            
+        }
+
+        // 遊戲開始
+        start_btn.onclick = function(){
+            // 停止上一輪的計時器(以防上一回合是突然中斷)
+            clearInterval(timer);
+
+            // 按下開始遊戲後，清空上一層的資料，初始化
+            var time = 30; //重設時間
+            point = 0; //分數歸0
+            difficulty = 2;
+            opacity = 0.6;
+            wrong = 0;
+
+            timeLeft.innerHTML = '剩餘時間：' + time;
+            score.innerHTML = '你的分數：' + point;
+            num.innerHTML = '錯誤次數：' + wrong;
+            // 設定倒數計時器
+            timer = setInterval(function(){
+                // time=time-1
+                time--;
+                timeLeft.innerHTML = '剩餘時間：' + time;
+                
+                // 時間等於0時，停止倒數
+                if (time == 0){
+                    stopGame();
+                    alert('時間結束,Your Score:' + point);
+                }
+            },1000) 
+            // 開始跑遊戲本體
+            startGame();
+        }
+    </script>
+</body>
+</html>
